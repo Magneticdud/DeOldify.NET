@@ -27,4 +27,5 @@
 "src\Tensor.cs"
 "src\UI.cs"
 "src\DeOldify.cs"
+"src\CLI.cs"
 "src\AssemblyInfo.cs"

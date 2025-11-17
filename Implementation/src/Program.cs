@@ -23,6 +23,7 @@ namespace ColorfulSoft.DeOldify
             DeOldify.Initialize();
             if(args.Length > 0)
             {
+                CLI.Run(args);
                 return;
             }
             Application.EnableVisualStyles();
