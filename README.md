@@ -1,6 +1,8 @@
 # DeOldify.NET
 *C# implementation of Jason Antic's DeOldify(https://github.com/jantic/DeOldify)* **Only for photos for now!**
 
+*With Reworked UI(https://github.com/ColorfulSoft/DeOldify.NET/pull/31)  by Regs01(https://github.com/regs01) March 2024*
+
 Paper "__DeOldify.NET: cross-platform application for coloring black and white photos__" was accepted to poster session of _Neuroinformatics - 2022_ conference. The paper describes technical details of managed C# implementation of the original DeOldify and contains some comparisons with different other image colorization products.
 
 # Plans for version 3.0
@@ -27,7 +29,7 @@ Paper "__DeOldify.NET: cross-platform application for coloring black and white p
 
 * Select a version of DeOldify.NET the one you want to build. Versions with and without simd are available, with float32 typed weights (higher accuracy) and float16 typed weights (lower accuracy and smaller file size), with a stable model and an artistic model, as in the original DeOldify. Further actions depend on your choice.
 
-* Download and unpack the repository, then download model from the releases (https://github.com/ColorfulSoft/DeOldify.NET/releases/download/Weights) and place it in Implementation\src\Resources.
+* Download and unpack the repository, then download model from the releases (https://github.com/ColorfulSoft/DeOldify.NET/releases) and place it in Implementation\src\Resources.
 
 |Model|Details|File|
 |:---:|:-----:|:--:|
@@ -53,7 +55,7 @@ Paper "__DeOldify.NET: cross-platform application for coloring black and white p
 
 * **Use!**
 
-![Windows GUI](https://github.com/ColorfulSoft/DeOldify.NET/blob/main/Examples/Sample.jpg)
+![Windows GUI](https://github.com/mulgaBrian/DeOldify.NET/blob/main/Examples/Sample.Windows.jpg.jpg)
 
 ## On Linux (Tested on Mint)
 * We recommend that the first step is to update everything. It may take time, but it's worth it:
@@ -79,7 +81,7 @@ sudo apt-get install mono-complete
 <summary>Using git and terminal</summary>
 
 ```
-git clone https://github.com/ColorfulSoft/DeOldify.NET.git
+git clone https://github.com/mulgaBrian/DeOldify.NET.git
 cd DeOldify.NET
 wget <model url> -O Implementation/src/Resources/<model name>
 ```
@@ -112,19 +114,19 @@ wget <model url> -O Implementation/src/Resources/<model name>
 
 * **Use!**
 
-![Linux GUI](https://github.com/ColorfulSoft/DeOldify.NET/blob/main/Examples/Sample.Linux.jpg)
+![Linux GUI](https://github.com/mulgaBrian/DeOldify.NET/blob/main/Examples/Sample.Linux.jpg)
 
 **_Please note, that DeOldify.NET using Mono is a bit slower, than using .NET Framework_**
 
 # Examples
 
-![Example1](https://github.com/ColorfulSoft/DeOldify.NET/blob/main/Examples/Example1.jpg)
+![Example1](https://github.com/mulgaBrian/DeOldify.NET/blob/main/Examples/Example1.jpg)
 
-![Example2](https://github.com/ColorfulSoft/DeOldify.NET/blob/main/Examples/Example2.jpg)
+![Example2](https://github.com/mulgaBrian/DeOldify.NET/blob/main/Examples/Example2.jpg)
 
 |Original|Artistic|Stable|
 |:------:|:------:|:----:|
-|![Original](https://github.com/ColorfulSoft/DeOldify.NET/blob/main/Examples/Original.jpg)|![Artistic](https://github.com/ColorfulSoft/DeOldify.NET/blob/main/Examples/Artistic.jpg)|![Stable](https://github.com/ColorfulSoft/DeOldify.NET/blob/main/Examples/Stable.jpg)|
+|![Original](https://github.com/mulgaBrian/DeOldify.NET/blob/main/Examples/Original.jpg)|![Artistic](https://github.com/mulgaBrian/DeOldify.NET/blob/main/Examples/Artistic.jpg)|![Stable](https://github.com/mulgaBrian/DeOldify.NET/blob/main/Examples/Stable.jpg)|
 
 # New algorithms
 
@@ -148,6 +150,7 @@ ___All tests was done in Windows 7 x64 laptop with Intel(R) Core(TM) i5-6300HQ C
 
 # Updates
 
+* [03/03/2024] - Changed compilers from windows to vs2022 in compile.bat files, added pull request 'Reworked UI' from colorsoft GitHub, added checkbox to add or not '-deoldify' to end of file name, Add tooltips to buttons. *
 * [10.09.2022] - **Version 2.1** has been released. The ability to drag and drop images into the application has been added, error handling has been improved, and the process of saving the result has been simplified.
 * [20.07.2022] - The Windows and Linux versions are combined.
 * **[11.07.2022] - DeOldify.NET now supports Stable model from original DeOldify. Added the ability to build DeOldify.NET with uncompressed original weights to obtain the maximum quality of coloring.**

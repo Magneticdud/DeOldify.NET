@@ -8,11 +8,11 @@ using System.Windows.Forms;
 namespace ColorfulSoft.DeOldify
 {
 
-    /// <summary>
-    /// Main class.
-    /// </summary>
-    public static class Program
-    {
+  /// <summary>
+  /// Main class.
+  /// </summary>
+  public static class Program
+  {
 
         /// <summary>
         /// Entry point.
@@ -36,6 +36,6 @@ namespace ColorfulSoft.DeOldify
             }
         }
 
-    }
+  }
 
 }
