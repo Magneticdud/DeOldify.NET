@@ -423,7 +423,7 @@ namespace ColorfulSoft.DeOldify
             }
 
             // Check if second argument is explicit output (single file mode)
-            if(inputFiles.Count == 2 && outputDir == null)
+            if(inputFiles.Count == 2 && options.OutputDir == null)
             {
                 // Check if second file exists - if not, treat as output path
                 if(!File.Exists(inputFiles[1]))
