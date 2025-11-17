@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Text;
 
 namespace ColorfulSoft.DeOldify
 {
@@ -15,6 +16,30 @@ namespace ColorfulSoft.DeOldify
     /// </summary>
     public static class CLI
     {
+        /// <summary>
+        /// CLI options.
+        /// </summary>
+        private class Options
+        {
+            public bool Quiet = false;
+            public bool JsonOutput = false;
+            public string StatusFile = null;
+            public string OutputDir = null;
+        }
+
+        /// <summary>
+        /// Result of processing a single file.
+        /// </summary>
+        private class ProcessResult
+        {
+            public string InputPath;
+            public string OutputPath;
+            public bool Success;
+            public string Error;
+            public int Width;
+            public int Height;
+            public double ProcessingTimeSeconds;
+        }
 
         /// <summary>
         /// Prints usage information.
@@ -35,6 +60,9 @@ namespace ColorfulSoft.DeOldify
             Console.WriteLine("Options:");
             Console.WriteLine("  -h, --help     Show this help message");
             Console.WriteLine("  -o <dir>       Output directory for batch processing");
+            Console.WriteLine("  -q, --quiet    Quiet mode (minimal output)");
+            Console.WriteLine("  -j, --json     Output results in JSON format");
+            Console.WriteLine("  --status <f>   Write progress to status file");
             Console.WriteLine();
             Console.WriteLine("Supported formats:");
             Console.WriteLine("  Input:  BMP, EMF, EXIF, GIF, ICO, JPG, PNG, TIFF, WMF");
@@ -135,35 +163,67 @@ namespace ColorfulSoft.DeOldify
         }
 
         /// <summary>
+        /// Writes status to file if specified.
+        /// </summary>
+        /// <param name="options">CLI options.</param>
+        /// <param name="message">Status message.</param>
+        private static void WriteStatus(Options options, string message)
+        {
+            if(options.StatusFile != null)
+            {
+                try
+                {
+                    File.WriteAllText(options.StatusFile, message);
+                }
+                catch
+                {
+                    // Ignore status file write errors
+                }
+            }
+        }
+
+        /// <summary>
         /// Processes a single image file.
         /// </summary>
         /// <param name="inputPath">Input file path.</param>
         /// <param name="outputPath">Output file path.</param>
-        /// <returns>True if successful, false otherwise.</returns>
-        private static bool ProcessImage(string inputPath, string outputPath)
+        /// <param name="options">CLI options.</param>
+        /// <returns>Process result.</returns>
+        private static ProcessResult ProcessImage(string inputPath, string outputPath, Options options)
         {
+            var result = new ProcessResult
+            {
+                InputPath = inputPath,
+                OutputPath = outputPath,
+                Success = false
+            };
+
+            var startTime = DateTime.Now;
+
             // Validate input file exists
             if(!File.Exists(inputPath))
             {
-                Console.WriteLine("Error: Input file not found: " + inputPath);
-                return false;
+                result.Error = "Input file not found";
+                if(!options.Quiet) Console.WriteLine("Error: Input file not found: " + inputPath);
+                return result;
             }
 
             // Validate input file extension
             var inputExt = Path.GetExtension(inputPath).ToLower();
             if(string.IsNullOrEmpty(inputExt))
             {
-                Console.WriteLine("Error: Input file has no extension: " + inputPath);
-                return false;
+                result.Error = "Input file has no extension";
+                if(!options.Quiet) Console.WriteLine("Error: Input file has no extension: " + inputPath);
+                return result;
             }
 
             // Validate output format
             ImageFormat outputFormat;
             if(!TryGetImageFormat(outputPath, out outputFormat))
             {
-                var outputExt = Path.GetExtension(outputPath);
-                Console.WriteLine("Error: Unsupported output format: " + outputExt);
-                return false;
+                result.Error = "Unsupported output format";
+                if(!options.Quiet) Console.WriteLine("Error: Unsupported output format: " + Path.GetExtension(outputPath));
+                return result;
             }
 
             // Validate output directory exists
@@ -173,12 +233,13 @@ namespace ColorfulSoft.DeOldify
                 try
                 {
                     Directory.CreateDirectory(outputDir);
-                    Console.WriteLine("Created output directory: " + outputDir);
+                    if(!options.Quiet) Console.WriteLine("Created output directory: " + outputDir);
                 }
                 catch(Exception ex)
                 {
-                    Console.WriteLine("Error: Cannot create output directory: " + ex.Message);
-                    return false;
+                    result.Error = "Cannot create output directory: " + ex.Message;
+                    if(!options.Quiet) Console.WriteLine("Error: " + result.Error);
+                    return result;
                 }
             }
 
@@ -187,7 +248,8 @@ namespace ColorfulSoft.DeOldify
             
             try
             {
-                Console.WriteLine("Loading: " + Path.GetFileName(inputPath));
+                if(!options.Quiet) Console.WriteLine("Loading: " + Path.GetFileName(inputPath));
+                WriteStatus(options, "loading");
                 
                 try
                 {
@@ -195,28 +257,34 @@ namespace ColorfulSoft.DeOldify
                 }
                 catch(ArgumentException)
                 {
-                    Console.WriteLine("Error: File is not a valid image: " + inputPath);
-                    return false;
+                    result.Error = "File is not a valid image";
+                    if(!options.Quiet) Console.WriteLine("Error: File is not a valid image: " + inputPath);
+                    return result;
                 }
                 catch(OutOfMemoryException)
                 {
-                    Console.WriteLine("Error: Image is too large or corrupted: " + inputPath);
-                    return false;
+                    result.Error = "Image is too large or corrupted";
+                    if(!options.Quiet) Console.WriteLine("Error: Image is too large or corrupted: " + inputPath);
+                    return result;
                 }
 
-                Console.WriteLine("  Size: " + inputImage.Width + "x" + inputImage.Height);
+                result.Width = inputImage.Width;
+                result.Height = inputImage.Height;
+
+                if(!options.Quiet) Console.WriteLine("  Size: " + inputImage.Width + "x" + inputImage.Height);
                 
                 // Check for reasonable image dimensions
                 if(inputImage.Width < 10 || inputImage.Height < 10)
                 {
-                    Console.WriteLine("  Warning: Image is very small, results may not be optimal");
+                    if(!options.Quiet) Console.WriteLine("  Warning: Image is very small, results may not be optimal");
                 }
                 else if(inputImage.Width > 4096 || inputImage.Height > 4096)
                 {
-                    Console.WriteLine("  Warning: Large image, processing may take time");
+                    if(!options.Quiet) Console.WriteLine("  Warning: Large image, processing may take time");
                 }
 
-                Console.WriteLine("  Colorizing...");
+                if(!options.Quiet) Console.WriteLine("  Colorizing...");
+                WriteStatus(options, "processing");
 
                 // Set up progress handler
                 var lastProgress = -1f;
@@ -225,7 +293,8 @@ namespace ColorfulSoft.DeOldify
                     var currentProgress = (int)percent;
                     if(currentProgress != (int)lastProgress && currentProgress % 10 == 0)
                     {
-                        Console.Write("\r  Progress: " + currentProgress + "%");
+                        WriteStatus(options, "processing:" + currentProgress);
+                        if(!options.Quiet) Console.Write("\r  Progress: " + currentProgress + "%");
                         lastProgress = percent;
                     }
                 };
@@ -237,35 +306,43 @@ namespace ColorfulSoft.DeOldify
                 }
                 catch(OutOfMemoryException)
                 {
-                    Console.WriteLine("\r  Error: Out of memory during colorization");
-                    return false;
+                    result.Error = "Out of memory during colorization";
+                    if(!options.Quiet) Console.WriteLine("\r  Error: Out of memory during colorization");
+                    return result;
                 }
 
-                Console.WriteLine("\r  Progress: 100%");
+                if(!options.Quiet) Console.WriteLine("\r  Progress: 100%");
+                WriteStatus(options, "saving");
 
                 // Save output
                 try
                 {
                     outputImage.Save(outputPath, outputFormat);
-                    Console.WriteLine("  Saved: " + Path.GetFileName(outputPath));
+                    if(!options.Quiet) Console.WriteLine("  Saved: " + Path.GetFileName(outputPath));
                 }
                 catch(System.Runtime.InteropServices.ExternalException)
                 {
-                    Console.WriteLine("  Error: Failed to save (file in use or no write permission)");
-                    return false;
+                    result.Error = "Failed to save (file in use or no write permission)";
+                    if(!options.Quiet) Console.WriteLine("  Error: " + result.Error);
+                    return result;
                 }
                 catch(IOException ex)
                 {
-                    Console.WriteLine("  Error: Failed to save: " + ex.Message);
-                    return false;
+                    result.Error = "Failed to save: " + ex.Message;
+                    if(!options.Quiet) Console.WriteLine("  Error: " + result.Error);
+                    return result;
                 }
 
-                return true;
+                result.Success = true;
+                result.ProcessingTimeSeconds = (DateTime.Now - startTime).TotalSeconds;
+                WriteStatus(options, "complete");
+                return result;
             }
             catch(Exception ex)
             {
-                Console.WriteLine("  Unexpected error: " + ex.Message);
-                return false;
+                result.Error = "Unexpected error: " + ex.Message;
+                if(!options.Quiet) Console.WriteLine("  Unexpected error: " + ex.Message);
+                return result;
             }
             finally
             {
@@ -306,14 +383,28 @@ namespace ColorfulSoft.DeOldify
 
             // Parse arguments
             var inputFiles = new System.Collections.Generic.List<string>();
-            string outputDir = null;
+            var options = new Options();
             string explicitOutput = null;
             
             for(int i = 0; i < args.Length; i++)
             {
                 if(args[i] == "-o" && i + 1 < args.Length)
                 {
-                    outputDir = args[i + 1];
+                    options.OutputDir = args[i + 1];
+                    i++; // Skip next argument
+                }
+                else if(args[i] == "-q" || args[i] == "--quiet")
+                {
+                    options.Quiet = true;
+                }
+                else if(args[i] == "-j" || args[i] == "--json")
+                {
+                    options.JsonOutput = true;
+                    options.Quiet = true; // JSON mode implies quiet
+                }
+                else if(args[i] == "--status" && i + 1 < args.Length)
+                {
+                    options.StatusFile = args[i + 1];
                     i++; // Skip next argument
                 }
                 else if(!args[i].StartsWith("-"))
@@ -343,16 +434,20 @@ namespace ColorfulSoft.DeOldify
             }
 
             // Validate output directory if specified
-            if(outputDir != null && !Directory.Exists(outputDir))
+            if(options.OutputDir != null && !Directory.Exists(options.OutputDir))
             {
                 try
                 {
-                    Directory.CreateDirectory(outputDir);
-                    Console.WriteLine("Created output directory: " + outputDir);
+                    Directory.CreateDirectory(options.OutputDir);
+                    if(!options.Quiet) Console.WriteLine("Created output directory: " + options.OutputDir);
                 }
                 catch(Exception ex)
                 {
-                    Console.WriteLine("Error: Cannot create output directory: " + ex.Message);
+                    if(!options.Quiet) Console.WriteLine("Error: Cannot create output directory: " + ex.Message);
+                    if(options.JsonOutput)
+                    {
+                        Console.WriteLine("{\"error\": \"Cannot create output directory: " + ex.Message.Replace("\"", "\\\"") + "\"}");
+                    }
                     Environment.Exit(1);
                     return;
                 }
@@ -360,18 +455,20 @@ namespace ColorfulSoft.DeOldify
 
             // Process files
             var startTime = DateTime.Now;
-            var successCount = 0;
-            var failCount = 0;
+            var results = new System.Collections.Generic.List<ProcessResult>();
 
-            Console.WriteLine("DeOldify.NET - Batch Processing");
-            Console.WriteLine("================================");
-            Console.WriteLine("Files to process: " + inputFiles.Count);
-            Console.WriteLine();
+            if(!options.Quiet)
+            {
+                Console.WriteLine("DeOldify.NET - Batch Processing");
+                Console.WriteLine("================================");
+                Console.WriteLine("Files to process: " + inputFiles.Count);
+                Console.WriteLine();
+            }
 
             for(int i = 0; i < inputFiles.Count; i++)
             {
                 var inputPath = inputFiles[i];
-                Console.WriteLine("[" + (i + 1) + "/" + inputFiles.Count + "] " + Path.GetFileName(inputPath));
+                if(!options.Quiet) Console.WriteLine("[" + (i + 1) + "/" + inputFiles.Count + "] " + Path.GetFileName(inputPath));
                 
                 string outputPath;
                 if(explicitOutput != null && inputFiles.Count == 1)
@@ -380,21 +477,13 @@ namespace ColorfulSoft.DeOldify
                 }
                 else
                 {
-                    outputPath = GenerateOutputPath(inputPath, outputDir);
+                    outputPath = GenerateOutputPath(inputPath, options.OutputDir);
                 }
 
-                var success = ProcessImage(inputPath, outputPath);
-                
-                if(success)
-                {
-                    successCount++;
-                }
-                else
-                {
-                    failCount++;
-                }
+                var result = ProcessImage(inputPath, outputPath, options);
+                results.Add(result);
 
-                Console.WriteLine();
+                if(!options.Quiet) Console.WriteLine();
                 
                 // Force garbage collection between files to free memory
                 if(inputFiles.Count > 1)
@@ -404,13 +493,69 @@ namespace ColorfulSoft.DeOldify
                 }
             }
 
-            // Summary
+            // Output results
             var elapsed = DateTime.Now - startTime;
-            Console.WriteLine("================================");
-            Console.WriteLine("Batch processing complete!");
-            Console.WriteLine("  Successful: " + successCount);
-            Console.WriteLine("  Failed: " + failCount);
-            Console.WriteLine("  Total time: " + elapsed.ToString(@"hh\:mm\:ss"));
+            var successCount = results.FindAll(r => r.Success).Count;
+            var failCount = results.Count - successCount;
+
+            if(options.JsonOutput)
+            {
+                // JSON output
+                var json = new StringBuilder();
+                json.Append("{");
+                json.Append("\"success\": " + (failCount == 0 ? "true" : "false") + ",");
+                json.Append("\"total\": " + results.Count + ",");
+                json.Append("\"successful\": " + successCount + ",");
+                json.Append("\"failed\": " + failCount + ",");
+                json.Append("\"processing_time_seconds\": " + elapsed.TotalSeconds.ToString("F2") + ",");
+                json.Append("\"results\": [");
+                
+                for(int i = 0; i < results.Count; i++)
+                {
+                    var r = results[i];
+                    json.Append("{");
+                    json.Append("\"input\": \"" + r.InputPath.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\",");
+                    json.Append("\"output\": \"" + r.OutputPath.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\",");
+                    json.Append("\"success\": " + (r.Success ? "true" : "false") + ",");
+                    if(r.Success)
+                    {
+                        json.Append("\"width\": " + r.Width + ",");
+                        json.Append("\"height\": " + r.Height + ",");
+                        json.Append("\"processing_time_seconds\": " + r.ProcessingTimeSeconds.ToString("F2"));
+                    }
+                    else
+                    {
+                        json.Append("\"error\": \"" + (r.Error ?? "Unknown error").Replace("\"", "\\\"") + "\"");
+                    }
+                    json.Append("}");
+                    if(i < results.Count - 1) json.Append(",");
+                }
+                
+                json.Append("]}");
+                Console.WriteLine(json.ToString());
+            }
+            else if(!options.Quiet)
+            {
+                // Human-readable summary
+                Console.WriteLine("================================");
+                Console.WriteLine("Batch processing complete!");
+                Console.WriteLine("  Successful: " + successCount);
+                Console.WriteLine("  Failed: " + failCount);
+                Console.WriteLine("  Total time: " + elapsed.ToString(@"hh\:mm\:ss"));
+            }
+            
+            // Clean up status file
+            if(options.StatusFile != null)
+            {
+                try
+                {
+                    File.Delete(options.StatusFile);
+                }
+                catch
+                {
+                    // Ignore
+                }
+            }
             
             if(failCount > 0)
             {
