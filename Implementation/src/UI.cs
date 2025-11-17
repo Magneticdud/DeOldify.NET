@@ -56,7 +56,7 @@ namespace ColorfulSoft.DeOldify
       this.Controls.Add(this.__Preview);
       // Text
       if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        this.Font = new Font("Segue UI", this.Font.Size);
+        this.Font = new Font("Segoe UI", this.Font.Size);
       this.__Text = new Label();
       this.__Text.Width = 530;
       this.__Text.Height = 150;
@@ -695,7 +695,7 @@ namespace ColorfulSoft.DeOldify
         this.MaximizeBox = true;
         this.MinimizeBox = true;
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-          this.Font = new Font("Segue UI", this.Font.Size);
+          this.Font = new Font("Segoe UI", this.Font.Size);
         this.AllowDrop = true;
         this.KeyPreview = true;
 
