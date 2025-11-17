@@ -13,7 +13,7 @@ The output file is optional. If not specified, the colorized image will be saved
 
 ### Examples
 
-**Command Line:**
+**Single File:**
 
 Colorize with automatic output naming:
 ```bash
@@ -30,6 +30,25 @@ DeOldify.exe old_photo.jpg colorized.png
 Process a BMP file and save as JPEG:
 ```bash
 DeOldify.exe input.bmp output.jpg
+```
+
+**Batch Processing:**
+
+Process multiple files:
+```bash
+DeOldify.exe photo1.jpg photo2.jpg photo3.jpg
+# Creates: photo1-colorized.jpg, photo2-colorized.jpg, photo3-colorized.jpg
+```
+
+Process all JPG files in current directory:
+```bash
+DeOldify.exe *.jpg
+```
+
+Process files and save to specific directory:
+```bash
+DeOldify.exe *.jpg -o colorized_output
+DeOldify.exe photo1.png photo2.png -o results
 ```
 
 **Drag & Drop (Windows):**
@@ -50,10 +69,14 @@ DeOldify.exe --help
 
 ## Features
 
+- **Batch processing**: Process multiple images in one command
 - **Drag & Drop support**: On Windows, drag an image onto the .exe to colorize it instantly
 - **Progress indication**: Shows colorization progress in the console
 - **Automatic format detection**: Output format is determined by file extension
 - **Smart file naming**: Automatically avoids overwriting existing files by adding numbers (e.g., `-colorized-1`, `-colorized-2`)
+- **Output directory option**: Save all results to a specific folder with `-o` flag
+- **Memory management**: Automatic cleanup between files in batch mode
+- **Batch summary**: Shows success/fail counts and total processing time
 - **Error handling**: Clear error messages for missing files or invalid inputs
 - **No GUI required**: Perfect for batch processing and automation
 
