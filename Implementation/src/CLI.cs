@@ -147,10 +147,13 @@ namespace ColorfulSoft.DeOldify
                 return;
             }
 
+            Bitmap inputImage = null;
+            Bitmap outputImage = null;
+            
             try
             {
                 Console.WriteLine("Loading input image: " + inputPath);
-                var inputImage = new Bitmap(inputPath);
+                inputImage = new Bitmap(inputPath);
 
                 Console.WriteLine("Image size: " + inputImage.Width + "x" + inputImage.Height);
                 Console.WriteLine("Starting colorization...");
@@ -168,7 +171,7 @@ namespace ColorfulSoft.DeOldify
                 };
 
                 // Colorize
-                var outputImage = DeOldify.Colorize(inputImage);
+                outputImage = DeOldify.Colorize(inputImage);
 
                 Console.WriteLine("\rProgress: 100%");
                 Console.WriteLine("Colorization complete!");
@@ -184,6 +187,18 @@ namespace ColorfulSoft.DeOldify
             {
                 Console.WriteLine("Error: " + ex.Message);
                 Environment.Exit(1);
+            }
+            finally
+            {
+                // Clean up resources
+                if(inputImage != null)
+                {
+                    inputImage.Dispose();
+                }
+                if(outputImage != null)
+                {
+                    outputImage.Dispose();
+                }
             }
         }
 
