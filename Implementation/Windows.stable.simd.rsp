@@ -15,6 +15,7 @@
 /r:System.Windows.Forms.dll
 
 /win32manifest:"src\Resources\app.manifest"
+/win32icon:"src\Resources\Icon.ico"
 
 /resource:"src\Resources\Preview.jpg"
 /resource:"src\Resources\Info.png"
