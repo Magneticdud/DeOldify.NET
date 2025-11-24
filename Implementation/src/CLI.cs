@@ -468,6 +468,19 @@ namespace ColorfulSoft.DeOldify
             for(int i = 0; i < inputFiles.Count; i++)
             {
                 var inputPath = inputFiles[i];
+                
+                // Skip files that contain "colorized" in the filename (batch mode only)
+                if(inputFiles.Count > 1 && Path.GetFileNameWithoutExtension(inputPath).Contains("colorized"))
+                {
+                    if(!options.Quiet) 
+                    {
+                        Console.WriteLine("[" + (i + 1) + "/" + inputFiles.Count + "] " + Path.GetFileName(inputPath));
+                        Console.WriteLine("  Skipped: File contains 'colorized' suffix");
+                        Console.WriteLine();
+                    }
+                    continue;
+                }
+                
                 if(!options.Quiet) Console.WriteLine("[" + (i + 1) + "/" + inputFiles.Count + "] " + Path.GetFileName(inputPath));
                 
                 string outputPath;

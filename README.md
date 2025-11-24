@@ -57,6 +57,10 @@ Paper "__DeOldify.NET: cross-platform application for coloring black and white p
 
 ![Windows GUI](https://github.com/mulgaBrian/DeOldify.NET/blob/main/Examples/Sample.Windows.jpg.jpg)
 
+## Command Line Interface
+
+I added a CLI for batch processing and automation. For detailed usage instructions, see [CLI_USAGE.md](CLI_USAGE.md).
+
 ## On Linux (Tested on Mint)
 * We recommend that the first step is to update everything. It may take time, but it's worth it:
 ```
@@ -116,6 +120,10 @@ wget <model url> -O Implementation/src/Resources/<model name>
 
 ![Linux GUI](https://github.com/mulgaBrian/DeOldify.NET/blob/main/Examples/Sample.Linux.jpg)
 
+## Command Line Interface
+
+DeOldify.NET includes a powerful CLI for batch processing and automation. For detailed usage instructions, see [CLI_USAGE.md](CLI_USAGE.md).
+
 **_Please note, that DeOldify.NET using Mono is a bit slower, than using .NET Framework_**
 
 # Examples
@@ -150,6 +158,7 @@ ___All tests was done in Windows 7 x64 laptop with Intel(R) Core(TM) i5-6300HQ C
 
 # Updates
 
+* [24.11.2025] - **Version 2.2** has been released. CLI batch mode now automatically skips files containing "colorized" in the filename, preventing reprocessing of already colorized images when switching between models (artistic vs stable). See [CLI_USAGE.md](CLI_USAGE.md) for details.
 * [03/03/2024] - Changed compilers from windows to vs2022 in compile.bat files, added pull request 'Reworked UI' from colorsoft GitHub, added checkbox to add or not '-deoldify' to end of file name, Add tooltips to buttons. *
 * [10.09.2022] - **Version 2.1** has been released. The ability to drag and drop images into the application has been added, error handling has been improved, and the process of saving the result has been simplified.
 * [20.07.2022] - The Windows and Linux versions are combined.

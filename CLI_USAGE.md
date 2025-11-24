@@ -70,6 +70,7 @@ DeOldify.exe --help
 ## Features
 
 - **Batch processing**: Process multiple images in one command
+- **Smart skip in batch mode**: Automatically skips files containing "colorized" in the filename during batch processing to avoid reprocessing results when switching between models (artistic vs stable)
 - **Drag & Drop support**: On Windows, drag an image onto the .exe to colorize it instantly
 - **Progress indication**: Shows colorization progress in the console
 - **Automatic format detection**: Output format is determined by file extension
@@ -86,6 +87,24 @@ To launch the GUI, simply run the executable without any arguments:
 ```bash
 DeOldify.exe
 ```
+
+## Batch Mode Behavior
+
+When processing multiple files (batch mode), the CLI automatically skips files that contain "colorized" in their filename. This prevents reprocessing of already colorized images when you run the command again with a different model.
+
+**Example:**
+```bash
+# First run with artistic model
+DeOldify.artistic.exe *.jpg
+# Creates: photo1-colorized.jpg, photo2-colorized.jpg
+
+# Second run with stable model - skips already colorized files
+DeOldify.stable..exe *.jpg
+# Processes: photo1.jpg, photo2.jpg
+# Skips: photo1-colorized.jpg, photo2-colorized.jpg
+```
+
+**Note:** This skip behavior only applies to batch mode (multiple files). When processing a single file, you can explicitly specify any filename, including those containing "colorized".
 
 ## Notes
 
